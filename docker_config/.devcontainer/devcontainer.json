@@ -1,0 +1,87 @@
+{
+	"name": "FAST-LIVO2 Development Environment",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "..",
+		"args": {
+			"VARIANT": "ubuntu-20.04"
+		}
+	},
+	
+	// 配置VS Code设置
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.shell.linux": "/bin/bash",
+				"C_Cpp.default.cppStandard": "c++14",
+				"C_Cpp.default.cStandard": "c11",
+				"cmake.configureOnOpen": false,
+				"files.associations": {
+					"*.launch": "xml",
+					"*.xacro": "xml",
+					"*.urdf": "xml",
+					"*.yaml": "yaml",
+					"*.yml": "yaml"
+				},
+				"C_Cpp.default.includePath": [
+					"/opt/ros/noetic/include",
+					"/usr/local/include/eigen3",
+					"/usr/include/pcl-1.10",
+					"/usr/include/opencv4",
+					"/workspace/catkin_ws/src/**",
+					"/workspace/catkin_ws/devel/include"
+				],
+				"C_Cpp.default.defines": [
+					"ROS_NOETIC",
+					"PCL_NO_PRECOMPILE"
+				]
+			},
+			"extensions": [
+				"ms-vscode.cpptools",
+				"ms-vscode.cpptools-extension-pack", 
+				"ms-vscode.cmake-tools",
+				"ms-python.python",
+				"redhat.vscode-xml",
+				"DotJoshJohnson.xml",
+				"ms-iot.vscode-ros",
+				"ajshort.ros",
+				"smilerobotics.urdf",
+				"streetsidesoftware.code-spell-checker",
+				"ms-vscode.hexeditor",
+				"eamodio.gitlens"
+			]
+		}
+	},
+
+	// 容器运行时配置
+	"runArgs": [
+		"--privileged",
+		"--network=host",
+		"--env=DISPLAY=${localEnv:DISPLAY}",
+		"--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
+		"--device=/dev/dri:/dev/dri"
+	],
+
+	// 容器内工作目录
+	"workspaceFolder": "/workspace",
+
+	// 容器启动后执行的命令
+	"postCreateCommand": "bash .devcontainer/setup.sh",
+
+	// 远程用户
+	"remoteUser": "ros",
+
+	// 端口转发
+	"forwardPorts": [11311],
+
+	// 挂载
+	"mounts": [
+		"source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated"
+	],
+
+	// 功能特性
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	}
+} 
