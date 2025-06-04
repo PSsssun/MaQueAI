@@ -1,0 +1,30 @@
+# MaQueAI Project Code Owners
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+
+# Global fallback owners (for any file not covered by other rules)
+* @PSsssun
+
+# Docker configuration - requires Docker expertise
+docker_config/ @PSsssun
+docker_config/Dockerfile-MaQueAI @PSsssun
+docker_config/.devcontainer/ @PSsssun
+
+# Scripts - critical for build and deployment
+scripts/ @PSsssun
+scripts/build_docker.sh @PSsssun
+scripts/run_docker*.sh @PSsssun
+scripts/build_livo.sh @PSsssun
+
+# Documentation - ensure quality and accuracy
+*.md @PSsssun
+README.md @PSsssun
+.github/ @PSsssun
+
+# Git configuration files
+.gitignore @PSsssun
+.gitattributes @PSsssun
+.github/CODEOWNERS @PSsssun
+
+# Root level configuration files
+/.* @PSsssun
