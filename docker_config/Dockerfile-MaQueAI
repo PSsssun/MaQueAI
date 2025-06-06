@@ -302,8 +302,19 @@ RUN echo '#!/bin/bash' > /usr/local/bin/build_livo.sh && \
     echo '' >> /usr/local/bin/build_livo.sh && \
     echo 'echo "🎉 compilation succeeded!"' >> /usr/local/bin/build_livo.sh && \
     echo 'echo "💡 usage:"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   in current terminal, run:"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   cd /workspace/catkin_ws"' >> /usr/local/bin/build_livo.sh && \
     echo 'echo "   source devel/setup.bash"' >> /usr/local/bin/build_livo.sh && \
-    echo 'echo "   roslaunch LIVO mapping_avia.launch"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   roscore"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   in another terminal, enter same docker image:"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   cd /workspace/catkin_ws"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   source devel/setup.bash"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   roslaunch fast_livo mapping_avia.launch"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   in terminal 2, enter same docker image:"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   cd /workspace/catkin_ws"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   source devel/setup.bash"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   roslaunch fast_livo mapping_avia.launch"' >> /usr/local/bin/build_livo.sh && \
+    echo 'echo "   rosbag play /data/*.bag"' >> /usr/local/bin/build_livo.sh && \
     chmod +x /usr/local/bin/build_livo.sh
 
 # create dependency check script
