@@ -5,13 +5,13 @@ echo "🚀 start MaQueAI Docker container (development mode - mount workspace)..
 
 # check and create workspace directory
 if [ ! -d "workspace" ]; then
-    echo "📁 create workspace directory..."
-    mkdir -p workspace/catkin_ws/src
-    echo "✅ workspace directory created"
-    echo "⚠️  first time use, please run the following commands in the container:"
-    echo "   1. cd /workspace/catkin_ws/src"
-    echo "   2. git clone https://github.com/hku-mars/FAST-LIVO2.git LIVO"
-    echo "   3. cd .. && catkin_make"
+  echo "📁 create workspace directory..."
+  mkdir -p workspace/catkin_ws/src
+  echo "✅ workspace directory created"
+  echo "⚠️  first time use, please run the following commands in the container:"
+  echo "   1. cd /workspace/catkin_ws/src"
+  echo "   2. git clone https://github.com/hku-mars/FAST-LIVO2.git LIVO"
+  echo "   3. cd .. && catkin_make"
 fi
 
 echo "📁 mount the following directories to the container:"
@@ -33,4 +33,4 @@ docker run -it --rm \
   --volume=/tmp/.X11-unix:/tmp/.X11-unix:rw \
   --volume=$(pwd)/workspace:/workspace \
   --volume=$(pwd)/data:/data \
-  maqueai:latest bash 
+  maque-ai:latest bash

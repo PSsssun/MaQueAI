@@ -7,9 +7,9 @@ echo ""
 # step 1: check Docker image
 echo "📦 step 1: check Docker image..."
 if ! docker images | grep -q "maqueai.*latest"; then
-    echo "❌ MaQueAI Docker image not found!"
-    echo "please run: ./scripts/build_docker.sh"
-    exit 1
+  echo "❌ MaQueAI Docker image not found!"
+  echo "please run: ./scripts/build_docker.sh"
+  exit 1
 fi
 echo "✅ Docker image ready"
 
@@ -17,18 +17,18 @@ echo "✅ Docker image ready"
 echo "🔧 step 2: setup host workspace..."
 
 if [ ! -d "workspace" ]; then
-    echo "📁 create workspace directory structure..."
-    mkdir -p workspace/catkin_ws/src
-    
-    # initialize catkin workspace
-    cd workspace/catkin_ws/src
-    ln -s /opt/ros/noetic/share/catkin/cmake/toplevel.cmake CMakeLists.txt || \
-        echo "# catkin workspace marker" > CMakeLists.txt
-    cd ../../../
-    
-    echo "✅ host workspace directory created"
+  echo "📁 create workspace directory structure..."
+  mkdir -p workspace/catkin_ws/src
+
+  # initialize catkin workspace
+  cd workspace/catkin_ws/src
+  ln -s /opt/ros/noetic/share/catkin/cmake/toplevel.cmake CMakeLists.txt ||
+    echo "# catkin workspace marker" >CMakeLists.txt
+  cd ../../../
+
+  echo "✅ host workspace directory created"
 else
-    echo "⚠️  workspace already exists, skip creation"
+  echo "⚠️  workspace already exists, skip creation"
 fi
 
 # step 3: clone LIVO project to host
@@ -36,20 +36,20 @@ echo "🚀 step 3: setup LIVO development project..."
 cd workspace/catkin_ws/src
 
 if [ ! -d "LIVO" ]; then
-    echo "📥 clone FAST-LIVO2 project and rename to LIVO..."
-    git clone https://github.com/hku-mars/FAST-LIVO2.git LIVO || {
-        echo "❌ clone failed, try other image source..."
-        git clone https://gitclone.com/github.com/hku-mars/FAST-LIVO2.git LIVO || {
-            echo "❌ all image sources failed, please manually clone"
-            echo "manual command: git clone https://github.com/hku-mars/FAST-LIVO2.git LIVO"
-        }
+  echo "📥 clone FAST-LIVO2 project and rename to LIVO..."
+  git clone https://github.com/hku-mars/FAST-LIVO2.git LIVO || {
+    echo "❌ clone failed, try other image source..."
+    git clone https://gitclone.com/github.com/hku-mars/FAST-LIVO2.git LIVO || {
+      echo "❌ all image sources failed, please manually clone"
+      echo "manual command: git clone https://github.com/hku-mars/FAST-LIVO2.git LIVO"
     }
-    
-    if [ -d "LIVO" ]; then
-        echo "✅ LIVO project cloned"
-    fi
+  }
+
+  if [ -d "LIVO" ]; then
+    echo "✅ LIVO project cloned"
+  fi
 else
-    echo "✅ LIVO project already exists"
+  echo "✅ LIVO project already exists"
 fi
 
 cd ../../../
@@ -63,11 +63,11 @@ echo "🌿 step 5: initialize Git repository..."
 cd workspace/catkin_ws/src
 
 if [ ! -d ".git" ]; then
-    echo "🔄 initialize Git repository..."
-    git init
-    
-    # create .gitignore
-    cat > .gitignore << 'EOF'
+  echo "🔄 initialize Git repository..."
+  git init
+
+  # create .gitignore
+  cat >.gitignore <<'EOF'
 # compilation generated files
 build/
 devel/
@@ -84,13 +84,13 @@ __pycache__/
 .DS_Store
 Thumbs.db
 EOF
-    
-    git add .
-    git commit -m "Initial commit: LIVO workspace setup"
-    echo "✅ Git repository initialized"
-    echo "📝 after that, you can add remote repository: git remote add origin <your-repo-url>"
+
+  git add .
+  git commit -m "Initial commit: LIVO workspace setup"
+  echo "✅ Git repository initialized"
+  echo "📝 after that, you can add remote repository: git remote add origin <your-repo-url>"
 else
-    echo "✅ Git repository already exists"
+  echo "✅ Git repository already exists"
 fi
 
 cd ../../../
@@ -118,4 +118,4 @@ echo ""
 echo "👥 team collaboration:"
 echo "1. push to remote repository: cd workspace/catkin_ws/src && git remote add origin <repo>"
 echo "2. other members: git clone <repo> MaQueAI/workspace/catkin_ws/src"
-echo "3. use: ./scripts/run_docker_dev.sh for development" 
+echo "3. use: ./scripts/run_docker_dev.sh for development"
