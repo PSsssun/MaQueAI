@@ -24,3 +24,6 @@ Thumbs.db
 # Temporary files
 *.log
 *.tmp
+
+# External source code (cloned dependencies)
+src/LIVO/
