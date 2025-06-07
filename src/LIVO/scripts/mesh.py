@@ -10,23 +10,25 @@ from scipy.spatial import KDTree
 SOURCE_DIR = "/home/chunran/Downloads/"  # Replace with your dataset path
 
 # VDBVolume parameters
-VOXEL_SIZE = 0.02  # Voxel size (smaller values increase precision but require more memory)
-SDF_TRUNC = 0.1    # Truncation distance for SDF (affects surface thickness, typically a multiple of voxel size)
-MIN_WEIGHT = 0.1   # Minimum weight for mesh extraction (filters out noisy voxels)
+VOXEL_SIZE = (
+    0.02  # Voxel size (smaller values increase precision but require more memory)
+)
+SDF_TRUNC = 0.1  # Truncation distance for SDF (affects surface thickness, typically a multiple of voxel size)
+MIN_WEIGHT = 0.1  # Minimum weight for mesh extraction (filters out noisy voxels)
 
 # ------------------------- Dataset Class -------------------------
 class Dataset:
     def __init__(self, folder: str):
         super().__init__()
         # Get all .pcd files in the folder
-        self.scan_files = glob.glob(os.path.join(folder, "*.pcd")) 
+        self.scan_files = glob.glob(os.path.join(folder, "*.pcd"))
         # Initialize poses as identity matrices
-        self.poses = np.array([np.eye(4) for _ in range(len(self.scan_files))]) 
+        self.poses = np.array([np.eye(4) for _ in range(len(self.scan_files))])
 
     def __getitem__(self, idx):
         if idx >= len(self.scan_files):
             raise IndexError("Index out of range")
-        
+
         # Compute relative pose
         pose = np.linalg.inv(self.poses[0]) @ self.poses[idx]
         # Read point cloud
@@ -36,7 +38,7 @@ class Dataset:
 
     def __len__(self):
         return len(self.scan_files)
-    
+
     def read_pcd(self, pcd_file):
         # Read .pcd file using Open3D
         pcd = o3d.io.read_point_cloud(pcd_file)
@@ -49,8 +51,9 @@ class Dataset:
             colors = np.zeros_like(points)  # If no colors, fill with zeros
         return points, colors
 
+
 # ------------------------- Main Program -------------------------
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Initialize VDBVolume
     print("Initializing VDBVolume...")
     vdb_volume = vdbfusion.VDBVolume(voxel_size=VOXEL_SIZE, sdf_trunc=SDF_TRUNC)
@@ -77,7 +80,7 @@ if __name__ == '__main__':
         o3d.utility.Vector3dVector(vert),
         o3d.utility.Vector3iVector(tri),
     )
-    
+
     # Save the mesh
     print("Saving the mesh to output_mesh.ply...")
     o3d.io.write_triangle_mesh("mesh.ply", mesh)
@@ -92,7 +95,9 @@ if __name__ == '__main__':
 
         # Use KDTree to find the nearest point for each vertex
         kdtree = KDTree(pcd_points)
-        _, indices = kdtree.query(vert)  # Find the nearest point cloud point for each vertex
+        _, indices = kdtree.query(
+            vert
+        )  # Find the nearest point cloud point for each vertex
         vertex_colors = pcd_colors[indices]  # Assign colors
 
         # Set mesh vertex colors

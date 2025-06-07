@@ -1,4 +1,4 @@
-/* 
+/*
 This file is part of FAST-LIVO2: Fast, Direct LiDAR-Inertial-Visual Odometry.
 
 Developer: Chunran Zheng <zhengcr@connect.hku.hk>
@@ -13,13 +13,14 @@ which is included as part of this source code package.
 #ifndef COMMON_LIB_H
 #define COMMON_LIB_H
 
-#include <utils/so3_math.h>
-#include <utils/types.h>
-#include <utils/color.h>
-#include <opencv2/opencv.hpp>
 #include <sensor_msgs/Imu.h>
 #include <sophus/se3.h>
 #include <tf/transform_broadcaster.h>
+#include <utils/color.h>
+#include <utils/so3_math.h>
+#include <utils/types.h>
+
+#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace Eigen;
@@ -35,8 +36,7 @@ using namespace Sophus;
 #define MAT_FROM_ARRAY(v) v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]
 #define DEBUG_FILE_DIR(name) (string(string(ROOT_DIR) + "Log/" + name))
 
-enum LID_TYPE
-{
+enum LID_TYPE {
   AVIA = 1,
   VELO16 = 2,
   OUST64 = 3,
@@ -45,35 +45,21 @@ enum LID_TYPE
   PANDAR128 = 6,
   ROBOSENSE = 7
 };
-enum SLAM_MODE
-{
-  ONLY_LO = 0,
-  ONLY_LIO = 1,
-  LIVO = 2
-};
-enum EKF_STATE
-{
-  WAIT = 0,
-  VIO = 1,
-  LIO = 2,
-  LO = 3
-};
+enum SLAM_MODE { ONLY_LO = 0, ONLY_LIO = 1, LIVO = 2 };
+enum EKF_STATE { WAIT = 0, VIO = 1, LIO = 2, LO = 3 };
 
-struct MeasureGroup
-{
+struct MeasureGroup {
   double vio_time;
   double lio_time;
   deque<sensor_msgs::Imu::ConstPtr> imu;
   cv::Mat img;
-  MeasureGroup()
-  {
+  MeasureGroup() {
     vio_time = 0.0;
     lio_time = 0.0;
   };
 };
 
-struct LidarMeasureGroup
-{
+struct LidarMeasureGroup {
   double lidar_frame_beg_time;
   double lidar_frame_end_time;
   double last_lio_update_time;
@@ -84,8 +70,7 @@ struct LidarMeasureGroup
   EKF_STATE lio_vio_flg;
   int lidar_scan_index_now;
 
-  LidarMeasureGroup()
-  {
+  LidarMeasureGroup() {
     lidar_frame_beg_time = -0.0;
     lidar_frame_end_time = 0.0;
     last_lio_update_time = -1.0;
@@ -99,18 +84,16 @@ struct LidarMeasureGroup
   };
 };
 
-typedef struct pointWithVar
-{
-  Eigen::Vector3d point_b;     // point in the lidar body frame
-  Eigen::Vector3d point_i;     // point in the imu body frame
-  Eigen::Vector3d point_w;     // point in the world frame
-  Eigen::Matrix3d var_nostate; // the var removed the state covarience
+typedef struct pointWithVar {
+  Eigen::Vector3d point_b;      // point in the lidar body frame
+  Eigen::Vector3d point_i;      // point in the imu body frame
+  Eigen::Vector3d point_w;      // point in the world frame
+  Eigen::Matrix3d var_nostate;  // the var removed the state covarience
   Eigen::Matrix3d body_var;
   Eigen::Matrix3d var;
   Eigen::Matrix3d point_crossmat;
   Eigen::Vector3d normal;
-  pointWithVar()
-  {
+  pointWithVar() {
     var_nostate = Eigen::Matrix3d::Zero();
     var = Eigen::Matrix3d::Zero();
     body_var = Eigen::Matrix3d::Zero();
@@ -122,11 +105,8 @@ typedef struct pointWithVar
   };
 } pointWithVar;
 
-
-struct StatesGroup
-{
-  StatesGroup()
-  {
+struct StatesGroup {
+  StatesGroup() {
     this->rot_end = M3D::Identity();
     this->pos_end = V3D::Zero();
     this->vel_end = V3D::Zero();
@@ -139,8 +119,7 @@ struct StatesGroup
     this->cov.block<9, 9>(10, 10) = MD(9, 9)::Identity() * 0.00001;
   };
 
-  StatesGroup(const StatesGroup &b)
-  {
+  StatesGroup(const StatesGroup& b) {
     this->rot_end = b.rot_end;
     this->pos_end = b.pos_end;
     this->vel_end = b.vel_end;
@@ -151,8 +130,7 @@ struct StatesGroup
     this->cov = b.cov;
   };
 
-  StatesGroup &operator=(const StatesGroup &b)
-  {
+  StatesGroup& operator=(const StatesGroup& b) {
     this->rot_end = b.rot_end;
     this->pos_end = b.pos_end;
     this->vel_end = b.vel_end;
@@ -164,8 +142,7 @@ struct StatesGroup
     return *this;
   };
 
-  StatesGroup operator+(const Matrix<double, DIM_STATE, 1> &state_add)
-  {
+  StatesGroup operator+(const Matrix<double, DIM_STATE, 1>& state_add) {
     StatesGroup a;
     a.rot_end = this->rot_end * Exp(state_add(0, 0), state_add(1, 0), state_add(2, 0));
     a.pos_end = this->pos_end + state_add.block<3, 1>(3, 0);
@@ -179,8 +156,7 @@ struct StatesGroup
     return a;
   };
 
-  StatesGroup &operator+=(const Matrix<double, DIM_STATE, 1> &state_add)
-  {
+  StatesGroup& operator+=(const Matrix<double, DIM_STATE, 1>& state_add) {
     this->rot_end = this->rot_end * Exp(state_add(0, 0), state_add(1, 0), state_add(2, 0));
     this->pos_end += state_add.block<3, 1>(3, 0);
     this->inv_expo_time += state_add(6, 0);
@@ -191,8 +167,7 @@ struct StatesGroup
     return *this;
   };
 
-  Matrix<double, DIM_STATE, 1> operator-(const StatesGroup &b)
-  {
+  Matrix<double, DIM_STATE, 1> operator-(const StatesGroup& b) {
     Matrix<double, DIM_STATE, 1> a;
     M3D rotd(b.rot_end.transpose() * this->rot_end);
     a.block<3, 1>(0, 0) = Log(rotd);
@@ -205,31 +180,32 @@ struct StatesGroup
     return a;
   };
 
-  void resetpose()
-  {
+  void resetpose() {
     this->rot_end = M3D::Identity();
     this->pos_end = V3D::Zero();
     this->vel_end = V3D::Zero();
   }
 
-  M3D rot_end;                              // the estimated attitude (rotation matrix) at the end lidar point
-  V3D pos_end;                              // the estimated position at the end lidar point (world frame)
-  V3D vel_end;                              // the estimated velocity at the end lidar point (world frame)
-  double inv_expo_time;                     // the estimated inverse exposure time (no scale)
-  V3D bias_g;                               // gyroscope bias
-  V3D bias_a;                               // accelerator bias
-  V3D gravity;                              // the estimated gravity acceleration
-  Matrix<double, DIM_STATE, DIM_STATE> cov; // states covariance
+  M3D rot_end;           // the estimated attitude (rotation matrix) at the end lidar point
+  V3D pos_end;           // the estimated position at the end lidar point (world frame)
+  V3D vel_end;           // the estimated velocity at the end lidar point (world frame)
+  double inv_expo_time;  // the estimated inverse exposure time (no scale)
+  V3D bias_g;            // gyroscope bias
+  V3D bias_a;            // accelerator bias
+  V3D gravity;           // the estimated gravity acceleration
+  Matrix<double, DIM_STATE, DIM_STATE> cov;  // states covariance
 };
 
 template <typename T>
-auto set_pose6d(const double t, const Matrix<T, 3, 1> &a, const Matrix<T, 3, 1> &g, const Matrix<T, 3, 1> &v, const Matrix<T, 3, 1> &p,
-                const Matrix<T, 3, 3> &R)
-{
+auto set_pose6d(const double t,
+                const Matrix<T, 3, 1>& a,
+                const Matrix<T, 3, 1>& g,
+                const Matrix<T, 3, 1>& v,
+                const Matrix<T, 3, 1>& p,
+                const Matrix<T, 3, 3>& R) {
   Pose6D rot_kp;
   rot_kp.offset_time = t;
-  for (int i = 0; i < 3; i++)
-  {
+  for (int i = 0; i < 3; i++) {
     rot_kp.acc[i] = a(i);
     rot_kp.gyr[i] = g(i);
     rot_kp.vel[i] = v(i);
