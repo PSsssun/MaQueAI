@@ -25,4 +25,8 @@ Thumbs.db
 *.log
 *.tmp
 
-
+# Symbolic links to external dependencies (created in Docker)
+src/CMakeLists.txt
+src/vikit_common
+src/vikit_py
+src/vikit_ros
