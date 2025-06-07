@@ -14,6 +14,7 @@ which is included as part of this source code package.
 #define LIVO_FRAME_H_
 
 #include <boost/noncopyable.hpp>
+#include "common_lib.h"
 #include <vikit/abstract_camera.h>
 
 class VisualPoint;
