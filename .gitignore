@@ -4,11 +4,14 @@ data/*.zip
 data/*.tar.gz
 data/*.rosbag
 
-# Build files
-build/
-devel/
-workspace/catkin_ws/build/
-workspace/catkin_ws/devel/
+# Build files - catkin workspace
+workspace/build/
+workspace/devel/
+workspace/install/
+
+# Build files - PX4
+workspace/px4/build/
+workspace/px4/build_*/
 
 # IDE files
 .vscode/
@@ -26,7 +29,7 @@ Thumbs.db
 *.tmp
 
 # Symbolic links to external dependencies (created in Docker)
-src/CMakeLists.txt
-src/vikit_common
-src/vikit_py
-src/vikit_ros
+workspace/src/CMakeLists.txt
+workspace/src/vikit_common
+workspace/src/vikit_py
+workspace/src/vikit_ros
