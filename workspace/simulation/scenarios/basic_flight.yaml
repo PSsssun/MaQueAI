@@ -1,0 +1,69 @@
+# 基础飞行测试场景
+name: "基础飞行测试"
+description: "测试基本的起飞、悬停、航点飞行、降落功能"
+version: "1.0"
+
+# 测试参数
+duration: 120  # 测试时长(秒)
+takeoff_altitude: 2.0  # 起飞高度(米)
+
+# 航点列表
+waypoints:
+  - x: 0.0
+    y: 0.0
+    z: 2.0
+    tolerance: 0.3
+    timeout: 15
+    wait_time: 3
+    description: "起飞点悬停"
+    
+  - x: 2.0
+    y: 0.0
+    z: 2.0
+    tolerance: 0.3
+    timeout: 20
+    wait_time: 3
+    description: "前进2米"
+    
+  - x: 2.0
+    y: 2.0
+    z: 2.0
+    tolerance: 0.3
+    timeout: 20
+    wait_time: 3
+    description: "右转2米"
+    
+  - x: 0.0
+    y: 2.0
+    z: 2.0
+    tolerance: 0.3
+    timeout: 20
+    wait_time: 3
+    description: "左转回到Y轴"
+    
+  - x: 0.0
+    y: 0.0
+    z: 2.0
+    tolerance: 0.3
+    timeout: 20
+    wait_time: 5
+    description: "返回起飞点"
+
+# 自定义任务
+custom_tasks:
+  - type: "hover"
+    duration: 10
+    description: "最终悬停10秒"
+
+# 成功标准
+success_criteria:
+  min_waypoint_completion_rate: 0.8  # 最低航点完成率
+  max_position_error: 0.5            # 最大位置误差(米)
+  max_total_errors: 2                # 最大错误数量
+
+# 安全设置
+safety:
+  max_altitude: 5.0       # 最大飞行高度(米)
+  max_velocity: 3.0       # 最大速度(m/s)
+  geofence_radius: 10.0   # 地理围栏半径(米)
+  emergency_land_battery: 20  # 紧急降落电量阈值(%) 

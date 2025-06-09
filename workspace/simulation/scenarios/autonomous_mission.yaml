@@ -1,0 +1,152 @@
+# 自主任务测试场景
+name: "自主任务测试"
+description: "测试完整的自主飞行任务，包括SLAM建图、路径规划、动态避障"
+version: "1.0"
+
+# 测试参数
+duration: 300  # 测试时长(秒)
+takeoff_altitude: 3.0  # 起飞高度(米)
+
+# 航点列表 - 复杂路径测试
+waypoints:
+  - x: 0.0
+    y: 0.0
+    z: 3.0
+    tolerance: 0.2
+    timeout: 20
+    wait_time: 5
+    description: "起飞点 - 等待SLAM初始化"
+    
+  - x: 5.0
+    y: 0.0
+    z: 3.0
+    tolerance: 0.3
+    timeout: 30
+    wait_time: 3
+    description: "第一段 - 直线飞行"
+    
+  - x: 5.0
+    y: 5.0
+    z: 3.0
+    tolerance: 0.3
+    timeout: 30
+    wait_time: 3
+    description: "第二段 - 90度转弯"
+    
+  - x: 0.0
+    y: 5.0
+    z: 3.0
+    tolerance: 0.3
+    timeout: 30
+    wait_time: 3
+    description: "第三段 - 平行返回"
+    
+  - x: 0.0
+    y: 0.0
+    z: 4.0
+    tolerance: 0.3
+    timeout: 30
+    wait_time: 3
+    description: "第四段 - 爬升1米"
+    
+  - x: 3.0
+    y: 3.0
+    z: 4.0
+    tolerance: 0.3
+    timeout: 30
+    wait_time: 3
+    description: "第五段 - 对角线飞行"
+    
+  - x: -2.0
+    y: 3.0
+    z: 2.5
+    tolerance: 0.3
+    timeout: 30
+    wait_time: 3
+    description: "第六段 - 负坐标测试"
+    
+  - x: 0.0
+    y: 0.0
+    z: 3.0
+    tolerance: 0.3
+    timeout: 30
+    wait_time: 5
+    description: "返回起飞点"
+
+# 复杂自定义任务
+custom_tasks:
+  - type: "circle"
+    center: [0, 0, 3]
+    radius: 2.0
+    speed: 0.5  # rad/s
+    duration: 20
+    description: "圆形飞行测试"
+    
+  - type: "figure8"
+    center: [0, 0, 3]
+    width: 4.0
+    height: 3.0
+    speed: 0.3  # rad/s
+    duration: 30
+    description: "8字飞行测试"
+    
+  - type: "hover"
+    duration: 15
+    description: "稳定性测试 - 长时间悬停"
+
+# SLAM测试要求
+slam_requirements:
+  map_coverage_min: 0.7          # 最小地图覆盖率
+  loop_closure_required: true    # 是否需要回环检测
+  max_localization_error: 0.2    # 最大定位误差(米)
+  min_feature_count: 500         # 最小特征点数量
+
+# 规划系统测试
+planning_tests:
+  dynamic_replanning: true       # 测试动态重规划
+  obstacle_avoidance: true       # 测试避障功能
+  path_optimization: true        # 测试路径优化
+
+# 控制系统测试
+control_tests:
+  response_time_max: 0.5         # 最大响应时间(秒)
+  tracking_accuracy_min: 0.95    # 最小跟踪精度
+  stability_test: true           # 稳定性测试
+
+# 成功标准
+success_criteria:
+  min_waypoint_completion_rate: 0.9  # 最低航点完成率
+  max_position_error: 0.3            # 最大位置误差(米)
+  max_total_errors: 1                # 最大错误数量
+  slam_quality_min: 0.8              # SLAM质量最低要求
+  control_stability_min: 0.9         # 控制稳定性最低要求
+
+# 性能要求
+performance_requirements:
+  localization_frequency_min: 45     # 最低定位频率(Hz)
+  control_frequency_min: 95          # 最低控制频率(Hz)
+  cpu_usage_max: 80                  # 最大CPU使用率(%)
+  memory_usage_max: 70               # 最大内存使用率(%)
+
+# 安全设置
+safety:
+  max_altitude: 6.0       # 最大飞行高度(米)
+  max_velocity: 5.0       # 最大速度(m/s)
+  max_acceleration: 3.0   # 最大加速度(m/s²)
+  geofence_radius: 15.0   # 地理围栏半径(米)
+  emergency_land_battery: 25  # 紧急降落电量阈值(%)
+  
+# 故障注入测试(可选)
+fault_injection:
+  enabled: false
+  scenarios:
+    - type: "sensor_failure"
+      sensor: "lidar"
+      start_time: 120
+      duration: 10
+      description: "激光雷达故障模拟"
+      
+    - type: "communication_loss"
+      start_time: 180
+      duration: 5
+      description: "通信中断模拟" 

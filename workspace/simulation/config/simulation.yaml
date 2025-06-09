@@ -1,0 +1,230 @@
+# MaQueAI 仿真系统配置
+# =====================================
+
+# 系统信息
+system:
+  name: "MaQueAI Simulation System"
+  version: "2.0-cpp"
+  description: "High-performance C++ autonomous flight simulation"
+  
+# 仿真环境设置
+simulation:
+  # 时间设置
+  use_sim_time: true
+  time_scale: 1.0                # 仿真时间倍速 (1.0 = 实时)
+  max_step_size: 0.002           # 最大仿真步长(秒)
+  real_time_factor: 1.0          # 实时因子
+  physics_update_rate: 500       # 物理更新频率(Hz)
+  
+  # 默认世界
+  default_world: "empty_world"
+  world_directory: "worlds/"
+  
+  # 传感器仿真
+  sensor_simulation:
+    enable_noise: true           # 启用传感器噪声
+    lidar_noise_stddev: 0.01     # 激光雷达噪声标准差(米)
+    imu_noise_stddev: 0.001      # IMU噪声标准差
+    gps_noise_stddev: 0.1        # GPS噪声标准差(米)
+  
+  # 环境仿真
+  environment:
+    enable_wind: false           # 启用风力仿真
+    wind_speed_max: 5.0         # 最大风速(m/s)
+    enable_turbulence: false    # 启用湍流
+    gravity: -9.8066            # 重力加速度(m/s²)
+
+# 飞行器配置
+vehicle:
+  # 基础参数
+  mass: 1.5                     # 质量(kg)
+  arm_length: 0.25              # 机臂长度(米)
+  thrust_to_weight_ratio: 2.5   # 推重比
+  
+  # 飞行限制
+  limits:
+    max_altitude: 50.0          # 最大飞行高度(米)
+    max_velocity: 10.0          # 最大速度(m/s)
+    max_acceleration: 15.0      # 最大加速度(m/s²)
+    max_angular_velocity: 2.0   # 最大角速度(rad/s)
+    max_tilt_angle: 45.0        # 最大倾斜角(度)
+  
+  # 传感器配置
+  sensors:
+    lidar:
+      enabled: true
+      model: "velodyne_vlp16"
+      range_max: 100.0          # 最大测距(米)
+      range_min: 0.1            # 最小测距(米)
+      points_per_second: 300000 # 点云频率
+      
+    imu:
+      enabled: true
+      update_rate: 100          # 更新频率(Hz)
+      
+    gps:
+      enabled: false            # 仿真中通常不使用GPS
+      update_rate: 10           # 更新频率(Hz)
+      
+    camera:
+      enabled: false            # 可选的相机传感器
+      width: 640
+      height: 480
+      fps: 30
+
+# ROS节点配置
+ros_nodes:
+  # 核心频率设置
+  frequencies:
+    localization: 50            # 定位频率(Hz)
+    planning: 10                # 规划频率(Hz) 
+    control: 100                # 控制频率(Hz)
+    interface: 20               # 接口频率(Hz)
+    monitoring: 5               # 监控频率(Hz)
+  
+  # 话题配置
+  topics:
+    # 输入话题
+    pointcloud: "/velodyne_points"
+    imu: "/mavros/imu/data"
+    mavros_state: "/mavros/state"
+    
+    # 输出话题
+    current_pose: "/localization/current_pose"
+    planned_path: "/planning/planned_path"
+    control_output: "/control/control_output"
+    vision_pose: "/mavros/vision_pose/pose"
+  
+  # 服务配置
+  services:
+    arming: "/mavros/cmd/arming"
+    set_mode: "/mavros/set_mode"
+    takeoff: "/mavros/cmd/takeoff"
+    land: "/mavros/cmd/land"
+
+# 测试配置
+testing:
+  # 默认测试参数
+  default_duration: 300         # 默认测试时长(秒)
+  default_scenario: "basic_flight"
+  
+  # 成功标准
+  success_criteria:
+    min_completion_rate: 0.8    # 最低完成率
+    max_position_error: 0.5     # 最大位置误差(米)
+    max_response_time: 0.5      # 最大响应时间(秒)
+    
+  # 性能要求
+  performance_thresholds:
+    cpu_usage_max: 80           # 最大CPU使用率(%)
+    memory_usage_max: 70        # 最大内存使用率(%)
+    localization_freq_min: 45   # 最低定位频率(Hz)
+    control_freq_min: 95        # 最低控制频率(Hz)
+
+# 数据记录配置
+data_logging:
+  # 记录设置
+  enable_rosbag: false          # 默认不启用rosbag(由脚本控制)
+  enable_csv: true              # 启用CSV数据导出
+  enable_plots: true            # 启用实时绘图
+  
+  # 记录的话题
+  recorded_topics:
+    - "/localization/current_pose"
+    - "/localization/filtered_odom"
+    - "/control/control_output"
+    - "/mavros/state"
+    - "/mavros/local_position/pose"
+    - "/planning/planned_path"
+    - "/livo/Odometry"
+    - "/velodyne_points"
+  
+  # 文件设置
+  bag_compression: "bz2"        # 压缩格式
+  max_bag_size: 2048            # 最大bag文件大小(MB)
+  split_bags: true              # 分割大文件
+
+# 可视化配置
+visualization:
+  # RViz设置
+  rviz:
+    config_file: "config/default_rviz.rviz"
+    enable_by_default: false
+    
+  # 实时绘图
+  plotting:
+    enable_position_plot: true
+    enable_velocity_plot: true
+    enable_error_plot: true
+    update_rate: 10             # 绘图更新频率(Hz)
+    
+  # Gazebo设置
+  gazebo:
+    gui: false                  # 默认无GUI模式
+    verbose: false              # 详细输出
+    
+# 调试配置
+debugging:
+  # 日志级别
+  log_level: "INFO"             # DEBUG|INFO|WARN|ERROR
+  enable_debug_topics: false    # 启用调试话题
+  
+  # 性能监控
+  enable_performance_monitor: true
+  monitor_system_resources: true
+  monitor_network_usage: false
+  
+  # 故障注入(用于测试)
+  fault_injection:
+    enabled: false
+    scenarios_dir: "fault_scenarios/"
+
+# 安全配置
+safety:
+  # 地理围栏
+  geofence:
+    enabled: true
+    radius: 50.0                # 围栏半径(米)
+    max_altitude: 30.0          # 最大高度(米)
+    
+  # 紧急处理
+  emergency:
+    auto_land_on_error: true    # 错误时自动降落
+    battery_threshold: 20       # 低电量阈值(%)
+    timeout_threshold: 5.0      # 通信超时阈值(秒)
+    
+  # 限制器
+  limiters:
+    enable_velocity_limiter: true
+    enable_acceleration_limiter: true
+    enable_attitude_limiter: true
+
+# 网络配置
+network:
+  # ROS通信
+  ros_master_uri: "http://localhost:11311"
+  
+  # MAVROS连接
+  mavros:
+    fcu_url: "udp://:14540@127.0.0.1:14557"
+    gcs_url: ""
+    system_id: 1
+    component_id: 1
+    
+# 文件路径配置
+paths:
+  # 输入路径
+  scenarios_dir: "scenarios/"
+  worlds_dir: "worlds/"
+  models_dir: "models/"
+  config_dir: "config/"
+  
+  # 输出路径
+  results_dir: "results/"
+  logs_dir: "results/logs/"
+  data_dir: "results/data/"
+  reports_dir: "results/reports/"
+  
+  # 缓存路径
+  cache_dir: "/tmp/maqueai_cache/"
+  temp_dir: "/tmp/maqueai_temp/" 

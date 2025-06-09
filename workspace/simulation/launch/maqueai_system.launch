@@ -1,0 +1,271 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- ========== MaQueAI C++系统仿真启动文件 ========== -->
+    
+    <!-- 启动参数 -->
+    <arg name="log_output" default="screen" doc="日志输出方式: screen|file"/>
+    <arg name="result_dir" default="/tmp/maqueai_results" doc="结果输出目录"/>
+    <arg name="enable_gui" default="false" doc="是否启用GUI"/>
+    <arg name="simulation_mode" default="true" doc="是否为仿真模式"/>
+    
+    <!-- 全局参数 -->
+    <param name="use_sim_time" value="true"/>
+    <param name="simulation_mode" value="$(arg simulation_mode)"/>
+    <param name="result_directory" value="$(arg result_dir)"/>
+    
+    <!-- 坐标系参数 -->
+    <param name="map_frame" value="map"/>
+    <param name="base_frame" value="base_link"/>
+    <param name="world_frame" value="world"/>
+    
+    <!-- ========== 1. FAST-LIVO2 SLAM系统 ========== -->
+    <group ns="livo" if="$(arg simulation_mode)">
+        <rosparam file="$(find livo)/config/velodyne.yaml" command="load"/>
+        
+        <node pkg="livo" type="livo_node" name="livo_node" 
+              output="$(arg log_output)" respawn="false">
+            <!-- 传感器话题映射 -->
+            <remap from="/velodyne_points" to="/velodyne_points"/>
+            <remap from="/imu" to="/mavros/imu/data"/>
+            
+            <!-- 仿真模式参数 -->
+            <param name="simulation_mode" value="true"/>
+            <param name="max_iteration" value="3"/>
+            <param name="publish_tf" value="true"/>
+            <param name="publish_path" value="true"/>
+        </node>
+    </group>
+    
+    <!-- ========== 2. 定位模块 (C++) ========== -->
+    <group ns="localization">
+        <node pkg="localization" type="slam_processor_node" name="slam_processor" 
+              output="$(arg log_output)" respawn="true">
+            
+            <!-- 滤波参数 -->
+            <param name="filter_alpha" value="0.8"/>
+            <param name="publish_rate" value="50.0"/>
+            <param name="timeout_threshold" value="0.5"/>
+            
+            <!-- 坐标系配置 -->
+            <param name="map_frame" value="map"/>
+            <param name="base_frame" value="base_link"/>
+            
+            <!-- 性能优化 -->
+            <param name="enable_prediction" value="true"/>
+            <param name="enable_outlier_rejection" value="true"/>
+            
+            <!-- 话题重映射 -->
+            <remap from="/Odometry" to="/livo/Odometry"/>
+            <remap from="imu" to="/mavros/imu/data"/>
+        </node>
+        
+        <!-- 可视化工具 (仅在GUI模式) -->
+        <node pkg="localization" type="slam_visualizer.py" name="slam_visualizer" 
+              output="$(arg log_output)" if="$(arg enable_gui)">
+            <param name="visualization_rate" value="10.0"/>
+            <param name="enable_trajectory_display" value="true"/>
+        </node>
+    </group>
+    
+    <!-- ========== 3. 路径规划模块 (C++) ========== -->
+    <group ns="planning">
+        <node pkg="planning" type="trajectory_planner_node" name="trajectory_planner" 
+              output="$(arg log_output)" respawn="true">
+            
+            <!-- 规划参数 -->
+            <param name="max_velocity" value="3.0"/>
+            <param name="max_acceleration" value="2.0"/>
+            <param name="planning_frequency" value="10.0"/>
+            <param name="safety_margin" value="0.5"/>
+            <param name="replanning_distance" value="1.0"/>
+            
+            <!-- 算法选择 -->
+            <param name="planner_type" value="astar"/>  <!-- astar|rrt|dijkstra -->
+            <param name="smoother_type" value="spline"/>  <!-- spline|bezier -->
+            
+            <!-- 约束参数 -->
+            <param name="max_climb_angle" value="30.0"/>  <!-- 度 -->
+            <param name="min_turning_radius" value="1.0"/>  <!-- 米 -->
+            
+            <!-- 话题重映射 -->
+            <remap from="current_pose" to="/localization/current_pose"/>
+            <remap from="goal" to="/move_base_simple/goal"/>
+        </node>
+    </group>
+    
+    <!-- ========== 4. 控制模块 (C++) ========== -->
+    <group ns="control">
+        <node pkg="control" type="trajectory_tracker_node" name="trajectory_tracker" 
+              output="$(arg log_output)" respawn="true">
+            
+            <!-- 控制频率 -->
+            <param name="control_frequency" value="100.0"/>
+            <param name="max_velocity" value="5.0"/>
+            <param name="max_acceleration" value="10.0"/>
+            
+            <!-- 精度参数 -->
+            <param name="position_tolerance" value="0.1"/>
+            <param name="velocity_tolerance" value="0.2"/>
+            <param name="yaw_tolerance" value="0.1"/>  <!-- 弧度 -->
+            
+            <!-- PID参数 - 位置控制器 -->
+            <rosparam param="position_pid">
+                kp: [2.5, 2.5, 3.0]
+                ki: [0.1, 0.1, 0.2]
+                kd: [0.5, 0.5, 0.3]
+                max_output: [5.0, 5.0, 3.0]
+                max_integral: [2.0, 2.0, 1.0]
+            </rosparam>
+            
+            <!-- PID参数 - 速度控制器 -->
+            <rosparam param="velocity_pid">
+                kp: [1.2, 1.2, 2.0]
+                ki: [0.05, 0.05, 0.1]
+                kd: [0.2, 0.2, 0.1]
+                max_output: [10.0, 10.0, 5.0]
+                max_integral: [1.0, 1.0, 0.5]
+            </rosparam>
+            
+            <!-- 安全限制 -->
+            <param name="enable_safety_checks" value="true"/>
+            <param name="max_tilt_angle" value="30.0"/>  <!-- 度 -->
+            <param name="emergency_stop_distance" value="0.3"/>  <!-- 米 -->
+            
+            <!-- 话题重映射 -->
+            <remap from="current_pose" to="/localization/current_pose"/>
+            <remap from="current_velocity" to="/localization/filtered_odom"/>
+            <remap from="target_path" to="/planning/planned_path"/>
+        </node>
+    </group>
+    
+    <!-- ========== 5. MAVROS接口模块 ========== -->
+    <group ns="interface">
+        <!-- MAVROS桥接器 -->
+        <node pkg="interface" type="mavros_bridge_node" name="mavros_bridge" 
+              output="$(arg log_output)" respawn="true">
+            
+            <!-- 通信参数 -->
+            <param name="heartbeat_rate" value="20.0"/>
+            <param name="status_rate" value="10.0"/>
+            <param name="connection_timeout" value="5.0"/>
+            
+            <!-- 坐标转换 -->
+            <param name="enable_coordinate_transform" value="true"/>
+            <param name="source_frame" value="ENU"/>  <!-- ROS坐标系 -->
+            <param name="target_frame" value="NED"/>  <!-- PX4坐标系 -->
+            
+            <!-- 安全检查 -->
+            <param name="enable_safety_checks" value="true"/>
+            <param name="max_command_age" value="1.0"/>  <!-- 秒 -->
+            
+            <!-- 话题重映射 -->
+            <remap from="control_command" to="/control/control_output"/>
+            <remap from="slam_odometry" to="/localization/filtered_odom"/>
+        </node>
+        
+        <!-- 视觉位置发布器 -->
+        <node pkg="interface" type="vision_pose_publisher_node" name="vision_pose_publisher" 
+              output="$(arg log_output)" respawn="true">
+            
+            <param name="publish_rate" value="30.0"/>
+            <param name="enable_covariance" value="true"/>
+            
+            <!-- 话题重映射 -->
+            <remap from="slam_pose" to="/localization/current_pose"/>
+            <remap from="vision_pose" to="/mavros/vision_pose/pose"/>
+        </node>
+    </group>
+    
+    <!-- ========== 6. 系统监控 ========== -->
+    <group ns="system_monitor">
+        <!-- 性能监控节点 -->
+        <node pkg="simulation" type="performance_monitor.py" name="performance_monitor" 
+              output="$(arg log_output)" respawn="true">
+            
+            <param name="monitor_frequency" value="5.0"/>
+            <param name="log_directory" value="$(arg result_dir)/logs"/>
+            
+            <!-- 监控的话题列表 -->
+            <rosparam param="monitored_topics">
+                - "/localization/current_pose"
+                - "/control/control_output"
+                - "/mavros/state"
+                - "/livo/Odometry"
+            </rosparam>
+        </node>
+        
+        <!-- 数据记录器 -->
+        <node pkg="simulation" type="data_logger.py" name="data_logger" 
+              output="$(arg log_output)" respawn="true">
+            
+            <param name="log_directory" value="$(arg result_dir)/data"/>
+            <param name="enable_rosbag" value="false"/>  <!-- 由外部脚本控制 -->
+            <param name="enable_csv_export" value="true"/>
+        </node>
+    </group>
+    
+    <!-- ========== 7. TF变换发布 ========== -->
+    <!-- 静态变换：世界坐标系到地图坐标系 -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_map"
+          args="0 0 0 0 0 0 world map"/>
+    
+    <!-- 静态变换：机体到激光雷达 -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_to_lidar"
+          args="0 0 0.1 0 0 0 base_link velodyne"/>
+    
+    <!-- ========== 8. 诊断和调试 ========== -->
+    <group ns="diagnostics" if="$(arg enable_gui)">
+        <!-- RQt监控面板 -->
+        <node pkg="rqt_gui" type="rqt_gui" name="system_monitor_gui"
+              args="--perspective-file $(find simulation)/config/monitor_perspective.perspective"/>
+        
+        <!-- 话题监控 -->
+        <node pkg="rqt_topic" type="rqt_topic" name="topic_monitor"/>
+    </group>
+    
+    <!-- ========== 参数服务器配置 ========== -->
+    <rosparam param="maqueai_system_config">
+        # 系统版本信息
+        version: "2.0-cpp"
+        architecture: "layered_simulation"
+        build_date: "$(env BUILD_DATE)"
+        
+        # 模块状态
+        modules:
+          localization: 
+            enabled: true
+            frequency: 50
+            priority: "high"
+          planning:
+            enabled: true  
+            frequency: 10
+            priority: "medium"
+          control:
+            enabled: true
+            frequency: 100
+            priority: "critical"
+          interface:
+            enabled: true
+            frequency: 20
+            priority: "high"
+            
+        # 系统限制
+        limits:
+          max_flight_time: 1800  # 30分钟
+          max_altitude: 50.0     # 米
+          max_velocity: 10.0     # m/s
+          max_range: 100.0       # 米
+          
+        # 仿真特定参数
+        simulation:
+          time_scale: 1.0        # 仿真时间倍速
+          physics_rate: 1000     # 物理仿真频率
+          sensor_noise: true     # 是否添加传感器噪声
+          wind_simulation: false  # 是否模拟风力
+    </rosparam>
+    
+    <!-- ========== 日志配置 ========== -->
+    <env name="ROSCONSOLE_CONFIG_FILE" 
+         value="$(find simulation)/config/rosconsole.conf"/>
+    
+</launch> 
