@@ -33,3 +33,15 @@ workspace/src/CMakeLists.txt
 workspace/src/vikit_common
 workspace/src/vikit_py
 workspace/src/vikit_ros
+workspace/px4/build/
+
+# PX4项目构建文件和临时文件
+workspace/px4/build/
+workspace/px4/.built
+workspace/px4/*.log
+workspace/px4/**/.git/
+workspace/px4/.git/
+
+# 忽略Python缓存
+workspace/px4/**/__pycache__/
+workspace/px4/**/*.pyc
