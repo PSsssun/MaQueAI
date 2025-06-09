@@ -43,33 +43,33 @@ while true; do
       if [ "$proc_start" != "0" ]; then
         build_elapsed=$((current_time - proc_start))
         build_time_formatted=$(printf "%02d:%02d:%02d" $((build_elapsed / 3600)) $((build_elapsed % 3600 / 60)) $((build_elapsed % 60)))
-        echo "   ⏱️  构建已用时间: $build_time_formatted"
+        echo "   ⏱️  build duration: $build_time_formatted"
       fi
 
       # show process status
       if [ -f "/proc/$docker_pid/status" ]; then
         state=$(grep "State:" /proc/$docker_pid/status 2>/dev/null | awk '{print $2}')
-        echo "   📊 进程状态: $state"
+        echo "   📊 process status: $state"
       fi
     fi
 
     # show system resource usage
     echo ""
-    echo "💻 系统资源使用:"
+    echo "💻 system resource usage:"
 
     # CPU usage
     cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)
-    echo "   🔥 CPU总使用率: ${cpu_usage}%"
+    echo "   🔥 CPU total usage: ${cpu_usage}%"
 
     # memory usage
     mem_info=$(free -h | grep "Mem:")
     total_mem=$(echo $mem_info | awk '{print $2}')
     used_mem=$(echo $mem_info | awk '{print $3}')
-    echo "   💾 内存使用: $used_mem / $total_mem"
+    echo "   💾 memory usage: $used_mem / $total_mem"
 
     # disk usage
     disk_usage=$(df -h . | tail -1 | awk '{print $5}')
-    echo "   💿 磁盘使用率: $disk_usage"
+    echo "   💿 disk usage: $disk_usage"
 
     # Docker specific information
     echo ""

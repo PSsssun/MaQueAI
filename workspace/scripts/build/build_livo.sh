@@ -1,27 +1,27 @@
 #!/bin/bash
 
-echo "🚀 === LIVO编译脚本 (只编译LIVO) ==="
+echo "🚀 === LIVO build script (only build LIVO) ==="
 echo "Author: MaQueAI Team"
-echo "Description: 只编译LIVO包，避免其他包的问题"
+echo "Description: only build LIVO package, avoid other package problems"
 echo ""
 
 # intelligent fix
 intelligent_fix() {
-  echo "🔍 === 检查Sophus依赖 ==="
+  echo "🔍 === check Sophus dependency ==="
 
   # check Sophus installation
-  echo "📦 检查Sophus..."
+  echo "📦 check Sophus..."
   if [ ! -f "/usr/local/include/sophus/so3.hpp" ]; then
-    echo "❌ Sophus缺失，重新安装..."
+    echo "❌ Sophus missing, reinstall..."
     cd /opt/dependencies/Sophus
     sudo rm -rf build/
     mkdir build && cd build
     cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_SOPHUS_TESTS=OFF
     make -j$(nproc)
     sudo make install
-    echo "✅ Sophus安装完成"
+    echo "✅ Sophus installed"
   else
-    echo "✅ Sophus存在"
+    echo "✅ Sophus exists"
   fi
 
   # set environment variables
@@ -55,36 +55,36 @@ main() {
   fi
 
   # link vikit package (check all sub-packages)
-  echo "📦 检查并链接vikit包..."
+  echo "📦 check and link vikit package..."
   for pkg in /opt/dependencies/rpg_vikit/*/; do
       if [ -f "$pkg/package.xml" ]; then
           pkg_name=$(basename "$pkg")
           if [ ! -d "$pkg_name" ]; then
-              echo "  - 链接 $pkg_name"
+              echo "  - link $pkg_name"
               ln -s "$pkg" ./
           fi
       fi
   done
-  echo "✅ vikit包已链接"
+  echo "✅ vikit package linked"
 
   # compile project
-  echo "🔨 开始编译LIVO..."
+  echo "🔨 start build LIVO..."
   cd /workspace/catkin_ws
   
-  # 清理构建目录避免冲突
+  # clean build directory to avoid conflict
   rm -rf build/ devel/
 
-  # 只编译LIVO包和其依赖
-  echo "   编译livo包..."
+  # only build LIVO package and its dependencies
+  echo "   build livo package..."
   if catkin_make --only-pkg-with-deps livo; then
-      echo "✅ LIVO编译成功!"
+      echo "✅ LIVO build success!"
   else
-      echo "❌ LIVO编译失败"
+      echo "❌ LIVO build failed"
       exit 1
   fi
 
-  echo "🎉 LIVO编译完成!"
-  echo "💡 使用方法:"
+  echo "🎉 LIVO build completed!"
+  echo "💡 usage:"
   echo "   cd /workspace/catkin_ws"
   echo "   source devel/setup.bash"
   echo "   roslaunch livo mapping_avia.launch"

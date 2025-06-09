@@ -1,17 +1,17 @@
 #!/bin/bash
 
-echo "🚀 === MaQueAI全量编译脚本 ==="
+echo "🚀 === MaQueAI full build script ==="
 echo "Author: MaQueAI Team"
-echo "Description: 统一编译LIVO和PX4系统（LIVO优先）"
+echo "Description: build LIVO and PX4 system (LIVO first)"
 echo ""
 
-# 获取脚本目录
+# get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 计时变量
+# time variable
 start_time=$(date +%s)
 
-# 日志函数
+# log function
 log_info() {
     echo "ℹ️  [$(date '+%H:%M:%S')] $1"
 }
@@ -28,15 +28,15 @@ log_warning() {
     echo "⚠️  [$(date '+%H:%M:%S')] $1"
 }
 
-# 全局变量
+# global variable
 PX4_SCRIPT=""
 LIVO_SCRIPT=""
 
-# 检查脚本是否存在
+# check script
 check_scripts() {
-    log_info "检查构建脚本..."
+    log_info "check build script..."
     
-    # 检查当前目录
+    # check current directory
     if [ -f "$SCRIPT_DIR/build_px4.sh" ]; then
         PX4_SCRIPT="$SCRIPT_DIR/build_px4.sh"
     elif [ -f "/tmp/build_scripts/build_px4.sh" ]; then
@@ -54,71 +54,71 @@ check_scripts() {
     fi
     
     if [ -z "$PX4_SCRIPT" ]; then
-        log_error "build_px4.sh 未找到"
+        log_error "build_px4.sh not found"
         exit 1
     fi
     
     if [ -z "$LIVO_SCRIPT" ]; then
-        log_error "build_livo.sh 未找到"
+        log_error "build_livo.sh not found"
         exit 1
     fi
     
-    log_success "构建脚本检查完成: LIVO=$LIVO_SCRIPT, PX4=$PX4_SCRIPT"
+    log_success "build script check completed: LIVO=$LIVO_SCRIPT, PX4=$PX4_SCRIPT"
 }
 
-# 构建LIVO
+# build LIVO
 build_livo() {
-    log_info "开始构建LIVO（优先级1）..."
+    log_info "start build LIVO (priority 1)..."
     echo "================================================"
     
     if bash "$LIVO_SCRIPT"; then
-        log_success "LIVO构建成功!"
+        log_success "LIVO build success!"
         return 0
     else
-        log_error "LIVO构建失败!"
+        log_error "LIVO build failed!"
         return 1
     fi
 }
 
-# 构建PX4
+# build PX4
 build_px4() {
-    log_info "开始构建PX4（优先级2）..."
+    log_info "start build PX4 (priority 2)..."
     echo "================================================"
     
     if bash "$PX4_SCRIPT"; then
-        log_success "PX4构建成功!"
+        log_success "PX4 build success!"
         return 0
     else
-        log_error "PX4构建失败!"
+        log_error "PX4 build failed!"
         return 1
     fi
 }
 
-# 显示系统信息
+# show system info
 show_system_info() {
-    log_info "系统信息:"
-    echo "   操作系统: $(lsb_release -d 2>/dev/null | cut -f2 || echo 'Unknown')"
-    echo "   内核版本: $(uname -r)"
-    echo "   CPU核心数: $(nproc)"
-    echo "   内存信息: $(free -h | grep '^Mem:' | awk '{print $2 " total, " $7 " available"}')"
-    echo "   磁盘空间: $(df -h /workspace | tail -1 | awk '{print $4 " available"}')"
+    log_info "system info:"
+    echo "   OS: $(lsb_release -d 2>/dev/null | cut -f2 || echo 'Unknown')"
+    echo "   Kernel: $(uname -r)"
+    echo "   CPU cores: $(nproc)"
+    echo "   Memory: $(free -h | grep '^Mem:' | awk '{print $2 " total, " $7 " available"}')"
+    echo "   Disk space: $(df -h /workspace | tail -1 | awk '{print $4 " available"}')"
 }
 
-# 主函数
+# main function
 main() {
-    echo "🎯 开始MaQueAI全量构建流程（LIVO → PX4）"
-    echo "⏰ 开始时间: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "🎯 start MaQueAI full build process (LIVO → PX4)"
+    echo "⏰ start time: $(date '+%Y-%m-%d %H:%M:%S')"
     echo ""
     
-    # 显示系统信息
+    # show system info
     show_system_info
     echo ""
     
-    # 检查脚本
+    # check script
     check_scripts
     echo ""
     
-    # 解析命令行参数
+    # parse command line arguments
     SKIP_PX4=false
     SKIP_LIVO=false
     
@@ -126,66 +126,66 @@ main() {
         case $1 in
             --skip-px4)
                 SKIP_PX4=true
-                log_warning "跳过PX4构建"
+                log_warning "skip PX4 build"
                 shift
                 ;;
             --skip-livo)
                 SKIP_LIVO=true
-                log_warning "跳过LIVO构建"
+                log_warning "skip LIVO build"
                 shift
                 ;;
             --px4-only)
                 SKIP_LIVO=true
-                log_info "仅构建PX4"
+                log_info "build PX4 only"
                 shift
                 ;;
             --livo-only)
                 SKIP_PX4=true
-                log_info "仅构建LIVO"
+                log_info "build LIVO only"
                 shift
                 ;;
             --help|-h)
-                echo "用法: $0 [选项]"
+                echo "Usage: $0 [options]"
                 echo ""
-                echo "选项:"
-                echo "  --skip-px4      跳过PX4构建"
-                echo "  --skip-livo     跳过LIVO构建"
-                echo "  --px4-only      仅构建PX4"
-                echo "  --livo-only     仅构建LIVO"
-                echo "  --help, -h      显示帮助信息"
+                echo "Options:"
+                echo "  --skip-px4      skip PX4 build"
+                echo "  --skip-livo     skip LIVO build"
+                echo "  --px4-only      build PX4 only"
+                echo "  --livo-only     build LIVO only"
+                echo "  --help, -h      show help info"
                 echo ""
-                echo "构建顺序: LIVO → PX4"
+                echo "build order: LIVO → PX4"
                 echo ""
-                echo "示例:"
-                echo "  $0                    # 构建所有项目（LIVO优先）"
-                echo "  $0 --px4-only        # 仅构建PX4"
-                echo "  $0 --livo-only       # 仅构建LIVO"
-                echo "  $0 --skip-px4        # 跳过PX4，仅构建LIVO"
+                echo "Examples:"
+                echo "  $0                    # build all projects (LIVO first)"
+                echo "  $0 --px4-only        # build PX4 only"
+                echo "  $0 --livo-only       # build LIVO only"
+                echo "  $0 --skip-px4        # skip PX4, build LIVO only"
                 exit 0
                 ;;
             *)
-                log_warning "未知参数: $1"
+                log_warning "unknown parameter: $1"
                 shift
                 ;;
         esac
     done
     
-    # 构建计数器
+    # build counter
     build_success=0
     build_total=0
     
-    # === 修改：先构建LIVO ===
+    # build LIVO first
     if [ "$SKIP_LIVO" = false ]; then
         build_total=$((build_total + 1))
         if build_livo; then
             build_success=$((build_success + 1))
         else
-            log_warning "LIVO构建失败，但继续构建PX4..."
+            log_warning "LIVO build failed, but continue build PX4..."
         fi
         echo ""
     fi
     
-    # === 修改：后构建PX4 ===
+    # build PX4
     if [ "$SKIP_PX4" = false ]; then
         build_total=$((build_total + 1))
         if build_px4; then
@@ -194,52 +194,52 @@ main() {
         echo ""
     fi
     
-    # 计算总耗时
+    # calculate total time
     end_time=$(date +%s)
     total_time=$((end_time - start_time))
     formatted_time=$(printf "%02d:%02d:%02d" $((total_time / 3600)) $((total_time % 3600 / 60)) $((total_time % 60)))
     
-    # 显示构建结果
+    # show build result
     echo "================================================"
-    echo "🎉 MaQueAI全量构建完成!"
-    echo "⏰ 总耗时: $formatted_time"
-    echo "📊 构建结果: $build_success/$build_total 成功"
-    echo "🔄 构建顺序: LIVO → PX4"
+    echo "🎉 MaQueAI full build completed!"
+    echo "⏰ total time: $formatted_time"
+    echo "📊 build result: $build_success/$build_total success"
+    echo "🔄 build order: LIVO → PX4"
     
     if [ $build_success -eq $build_total ] && [ $build_total -gt 0 ]; then
-        log_success "所有项目构建成功!"
+        log_success "all projects build success!"
         echo ""
-        echo "🚀 快速启动指南:"
+        echo "🚀 quick start guide:"
         echo ""
-        echo "🤖 LIVO系统（优先级1）:"
+        echo "🤖 LIVO system (priority 1):"
         echo "   cd /workspace"
         echo "   source /opt/ros/noetic/setup.bash"
         echo "   source catkin_ws/devel/setup.bash"
         echo "   roslaunch livo mapping_avia.launch"
         echo ""
-        echo "🚁 PX4仿真（优先级2）:"
+        echo "🚁 PX4 simulation (priority 2):"
         echo "   cd /workspace/px4"
-        echo "   make px4_sitl gazebo                # GUI仿真"
-        echo "   HEADLESS=1 make px4_sitl gazebo     # 无头仿真"
+        echo "   make px4_sitl gazebo                # GUI simulation"
+        echo "   HEADLESS=1 make px4_sitl gazebo     # headless simulation"
         echo ""
-        echo "🐳 GUI容器:"
+        echo "🐳 GUI container:"
         echo "   ./scripts/docker/run_docker_gui.sh"
         echo ""
         
         exit 0
     else
-        log_error "部分项目构建失败!"
+        log_error "some projects build failed!"
         echo ""
-        echo "💡 故障排除:"
-        echo "   - 检查网络连接"
-        echo "   - 确保有足够的磁盘空间"
-        echo "   - 查看上方的详细错误信息"
-        echo "   - 尝试单独构建失败的项目"
+        echo "💡 fault tolerance:"
+        echo "   - check network connection"
+        echo "   - ensure enough disk space"
+        echo "   - check error info above"
+        echo "   - try to build failed project"
         echo ""
-        echo "🔄 注意：构建顺序为 LIVO → PX4"
+        echo "🔄 note: build order is LIVO → PX4"
         exit 1
     fi
 }
 
-# 执行主函数
+# execute main function
 main "$@" 

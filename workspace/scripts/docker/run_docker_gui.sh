@@ -1,17 +1,17 @@
 #!/bin/bash
 
 echo "🖥️ === MaQueAI GUI-enabled Docker Environment ==="
-echo "启动支持图形界面的Docker容器，可运行Gazebo可视化仿真"
+echo "start Docker container with GUI support, can run Gazebo visualization simulation"
 echo ""
 
-# 获取脚本目录
+# calculate project root directory (MaQueAI/)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
-# 检查是否在正确的项目根目录
+# check if in the correct project root directory
 if [ ! -d "$PROJECT_ROOT/workspace" ] || [ ! -d "$PROJECT_ROOT/workspace/px4" ]; then
-    echo "❌ 错误：无法找到MaQueAI项目结构"
-    echo "请确保此脚本在正确的MaQueAI项目目录中运行"
+    echo "❌ error: cannot find MaQueAI project structure"
+    echo "please ensure running this script in the correct MaQueAI project directory"
     echo "📂 当前PROJECT_ROOT: $PROJECT_ROOT"
     echo "📂 查找: $PROJECT_ROOT/workspace 和 $PROJECT_ROOT/workspace/px4"
     echo "📂 SCRIPT_DIR: $SCRIPT_DIR"
@@ -19,58 +19,58 @@ if [ ! -d "$PROJECT_ROOT/workspace" ] || [ ! -d "$PROJECT_ROOT/workspace/px4" ];
     exit 1
 fi
 
-# 检查Docker是否运行
+# check if Docker is running
 if ! docker info >/dev/null 2>&1; then
-    echo "❌ Docker未运行。请启动Docker后重试。"
+    echo "❌ Docker is not running. Please start Docker and try again."
     exit 1
 fi
 
-# Docker镜像和容器名称
+# Docker image and container name
 IMAGE_NAME="maque-ai:latest"
 CONTAINER_NAME="maque-ai-gui-container"
 
-# 检查Docker镜像是否存在
+# check if Docker image exists
 if ! docker images | grep -q "maque-ai"; then
-    echo "❌ Docker镜像 $IMAGE_NAME 不存在"
-    echo "💡 请先构建镜像或确保镜像名称正确"
+    echo "❌ Docker image $IMAGE_NAME not found"
+    echo "💡 please build image or ensure image name is correct"
     exit 1
 fi
-echo "✅ Docker镜像 $IMAGE_NAME 已找到"
+echo "✅ Docker image $IMAGE_NAME found"
 
 
 
-# GUI环境检测
+# GUI environment detection
 check_gui_support() {
-    echo "🔍 检查GUI支持..."
+    echo "🔍 check GUI support..."
     
-    # 检查X11服务器
+    # check X11 server
     if [ -z "$DISPLAY" ]; then
-        echo "⚠️ 警告：未设置DISPLAY环境变量"
+        echo "⚠️ warning: DISPLAY environment variable not set"
         export DISPLAY=:0
-        echo "已设置 DISPLAY=$DISPLAY"
+        echo "DISPLAY=$DISPLAY set"
     fi
     
-    # 检查X11授权
+    # check X11 authorization
     if [ ! -f "$HOME/.Xauthority" ]; then
-        echo "⚠️ 警告：未找到X11授权文件，创建空文件"
+        echo "⚠️ warning: X11 authorization file not found, create empty file"
         touch "$HOME/.Xauthority"
     fi
     
-    # 检查DRI设备（GPU加速）
+    # check DRI device (GPU acceleration)
     GPU_DEVICE_AVAILABLE=false
     if [ -d "/dev/dri" ]; then
-        echo "✅ 检测到GPU设备，启用硬件加速"
+        echo "✅ detect GPU device, enable hardware acceleration"
         GPU_DEVICE_AVAILABLE=true
     else
-        echo "ℹ️ 未检测到GPU设备，使用软件渲染"
+        echo "ℹ️ no GPU device detected, use software rendering"
     fi
 }
 
-# 准备Docker运行参数
+# prepare Docker run parameters
 prepare_docker_args() {
     check_gui_support
     
-    # 基础参数
+    # basic parameters
     DOCKER_ARGS=(
         "--name" "$CONTAINER_NAME"
         "--rm"
@@ -79,7 +79,7 @@ prepare_docker_args() {
         "--privileged"
         "--network=host"
         
-        # X11支持
+        # X11 support
         "--env" "DISPLAY=$DISPLAY"
         "--env" "QT_X11_NO_MITSHM=1"
         "--env" "QT_QPA_PLATFORM=xcb"
@@ -90,56 +90,56 @@ prepare_docker_args() {
         "--volume" "/tmp/.X11-unix:/tmp/.X11-unix:rw"
         "--volume" "$HOME/.Xauthority:/home/ros/.Xauthority:rw"
         
-        # 项目目录挂载
+        # project directory mount
         "--volume" "$PROJECT_ROOT/workspace:/workspace"
         "--volume" "$PROJECT_ROOT:/maque-ai-root"
         
-        # 工作目录
+        # working directory
         "--workdir" "/workspace"
     )
     
-    # 添加GPU支持（如果可用）
+    # add GPU support (if available)
     if [ "$GPU_DEVICE_AVAILABLE" = true ]; then
         DOCKER_ARGS+=("--device=/dev/dri")
     fi
     
-    # 添加声音支持（如果设备存在）
+    # add sound support (if device exists)
     if [ -e "/dev/snd" ]; then
         DOCKER_ARGS+=("--device" "/dev/snd")
     fi
 }
 
-# 停止已存在的容器
+# stop existing container
 cleanup_existing_container() {
     if docker ps -a | grep -q "$CONTAINER_NAME"; then
-        echo "🧹 清理已存在的容器..."
+        echo "🧹 clean up existing container..."
         docker stop "$CONTAINER_NAME" >/dev/null 2>&1 || true
         docker rm "$CONTAINER_NAME" >/dev/null 2>&1 || true
     fi
 }
 
-# 快速启动仿真
+# quick start simulation
 quick_start_simulation() {
     local sim_type="$1"
-    echo "🚀 快速启动PX4仿真模式: $sim_type"
+    echo "🚀 quick start PX4 simulation mode: $sim_type"
     
-    # 清理已存在的容器
+    # clean up existing container
     cleanup_existing_container
     
-    # 准备Docker参数
+    # prepare Docker parameters
     prepare_docker_args
     
-    # 允许X11连接
-    echo "🔐 配置X11权限..."
-    xhost +local:docker >/dev/null 2>&1 || echo "⚠️ 无法设置X11权限，GUI可能无法正常工作"
+    # allow X11 connection
+    echo "🔐 configure X11 permission..."
+    xhost +local:docker >/dev/null 2>&1 || echo "⚠️ cannot set X11 permission, GUI may not work"
     
-    echo "🐳 启动Docker容器并运行仿真..."
-    echo "📂 项目目录: $PROJECT_ROOT"
+    echo "🐳 start Docker container and run simulation..."
+    echo "📂 project directory: $PROJECT_ROOT"
     echo "🖥️ DISPLAY: $DISPLAY"
-    echo "🎮 仿真类型: $sim_type"
+    echo "🎮 simulation type: $sim_type"
     echo ""
     
-    # 根据仿真类型选择启动命令
+    # according to simulation type to select start command
     local sim_cmd
     case "$sim_type" in
         "iris"|"default")
@@ -159,137 +159,137 @@ quick_start_simulation() {
             ;;
     esac
     
-    # 启动容器并运行仿真
+    # start container and run simulation
     docker run "${DOCKER_ARGS[@]}" "$IMAGE_NAME" bash -c "$sim_cmd; bash" || {
-        echo "❌ Docker容器启动失败"
+        echo "❌ Docker container start failed"
         echo ""
-        echo "💡 故障排除建议："
-        echo "   1. 确保Docker镜像存在: docker images | grep maque-ai"
-        echo "   2. 检查X11服务器是否运行"
-        echo "   3. 尝试运行: xhost +local:docker"
-        echo "   4. 如果在WSL中，确保X11服务器已启动"
-        echo "   5. 确保PX4已编译: ls /workspace/px4/build/px4_sitl_default/bin/px4"
+        echo "💡 troubleshooting suggestions:"
+        echo "   1. ensure Docker image exists: docker images | grep maque-ai"
+        echo "   2. check if X11 server is running"
+        echo "   3. try to run: xhost +local:docker"
+        echo "   4. if in WSL, ensure X11 server is running"
+        echo "   5. ensure PX4 is compiled: ls /workspace/px4/build/px4_sitl_default/bin/px4"
         exit 1
     }
     
-    # 恢复X11权限
-    echo "🔒 恢复X11权限..."
+    # restore X11 permission
+    echo "🔒 restore X11 permission..."
     xhost -local:docker >/dev/null 2>&1 || true
 }
 
-# 主函数
+# main function
 main() {
-    echo "🚀 启动GUI支持的MaQueAI开发环境..."
+    echo "🚀 start MaQueAI GUI development environment..."
     
-    # 清理已存在的容器
+    # clean up existing container
     cleanup_existing_container
     
-    # 准备Docker参数
+    # prepare Docker parameters
     prepare_docker_args
     
-    # 允许X11连接
-    echo "🔐 配置X11权限..."
-    xhost +local:docker >/dev/null 2>&1 || echo "⚠️ 无法设置X11权限，GUI可能无法正常工作"
+    # allow X11 connection
+    echo "🔐 configure X11 permission..."
+    xhost +local:docker >/dev/null 2>&1 || echo "⚠️ cannot set X11 permission, GUI may not work"
     
-    echo "🐳 启动Docker容器..."
-    echo "📂 项目目录: $PROJECT_ROOT"
+    echo "🐳 start Docker container..."
+    echo "📂 project directory: $PROJECT_ROOT"
     echo "🖥️ DISPLAY: $DISPLAY"
     echo ""
     
-    # 启动容器并显示使用说明
+    # start container and show usage
     docker run "${DOCKER_ARGS[@]}" "$IMAGE_NAME" bash -c "
-        echo '🎉 欢迎使用MaQueAI GUI开发环境!'
+        echo '🎉 welcome to MaQueAI GUI development environment!'
         echo ''
-        echo '📋 快速启动仿真:'
+        echo '📋 quick start simulation:'
         echo '   cd /workspace/px4'
-        echo '   make px4_sitl gazebo           # 默认iris四旋翼仿真'
-        echo '   make px4_sitl gazebo_plane     # 固定翼仿真'
-        echo '   make px4_sitl gazebo_vtol_standard # 垂直起降仿真'
+        echo '   make px4_sitl gazebo           # default iris quadrotor simulation'
+        echo '   make px4_sitl gazebo_plane     # fixed-wing simulation'
+        echo '   make px4_sitl gazebo_vtol_standard # vertical takeoff and landing simulation'
         echo ''
-        echo '🔍 检查PX4编译状态:'
+        echo '🔍 check PX4 compilation status:'
         if [ -f /workspace/px4/build/px4_sitl_default/bin/px4 ]; then
-            echo '   ✅ PX4已编译完成，可以直接启动仿真'
+            echo '   ✅ PX4 compiled, can start simulation directly'
         else
-            echo '   ❌ PX4未编译，请先运行构建脚本:'
+            echo '   ❌ PX4 not compiled, please run build script:'
             echo '      ./scripts/build/build_px4.sh'
         fi
         echo ''
-        echo '🌍 设置Gazebo环境变量...'
+        echo '🌍 set Gazebo environment variables...'
         export GAZEBO_MODEL_PATH=\"/workspace/px4/Tools/simulation/gazebo-classic/sitl_gazebo-classic/models:\$GAZEBO_MODEL_PATH\"
         export GAZEBO_PLUGIN_PATH=\"/workspace/px4/build/px4_sitl_default/build_gazebo-classic:\$GAZEBO_PLUGIN_PATH\"
         export GAZEBO_RESOURCE_PATH=\"/workspace/px4/Tools/simulation/gazebo-classic/sitl_gazebo-classic/worlds:\$GAZEBO_RESOURCE_PATH\"
-        echo '   ✅ Gazebo环境变量已设置'
+        echo '   ✅ Gazebo environment variables set'
         echo ''
-        echo '💡 如果是首次使用，请先运行:'
-        echo '   ./scripts/build/build_px4.sh    # 完整构建PX4和Gazebo环境'
+        echo '💡 if first time use, please run:'
+        echo '   ./scripts/build/build_px4.sh    # full build PX4 and Gazebo environment'
         echo ''
-        echo '📖 输入 exit 退出容器'
-        echo '🆘 输入 --help 查看完整使用说明'
+        echo '📖 input exit to exit container'
+        echo '🆘 input --help to view full usage'
         echo ''
         cd /workspace
         bash
     " || {
-        echo "❌ Docker容器启动失败"
+        echo "❌ Docker container start failed"
         echo ""
-        echo "💡 故障排除建议："
-        echo "   1. 确保Docker镜像存在: docker images | grep maque-ai"
-        echo "   2. 检查X11服务器是否运行"
-        echo "   3. 尝试运行: xhost +local:docker"
-        echo "   4. 如果在WSL中，确保X11服务器已启动"
-        echo "   5. 运行构建脚本: ./scripts/build/build_px4.sh"
+        echo "💡 troubleshooting suggestions:"
+        echo "   1. ensure Docker image exists: docker images | grep maque-ai"
+        echo "   2. check if X11 server is running"
+        echo "   3. try to run: xhost +local:docker"
+        echo "   4. if in WSL, ensure X11 server is running"
+        echo "   5. run build script: ./scripts/build/build_px4.sh"
         exit 1
     }
     
-    # 恢复X11权限
-    echo "🔒 恢复X11权限..."
+    # restore X11 permission
+    echo "🔒 restore X11 permission..."
     xhost -local:docker >/dev/null 2>&1 || true
 }
 
-# 显示使用说明
+# show usage
 show_usage() {
-    echo "📖 GUI容器使用说明："
+    echo "📖 GUI container usage:"
     echo ""
-    echo "🖥️ 启动PX4 Gazebo仿真："
+    echo "🖥️ start PX4 Gazebo simulation:"
     echo "   cd /workspace/px4"
-    echo "   make px4_sitl gazebo                    # 默认iris四旋翼"
-    echo "   make px4_sitl gazebo_iris               # iris四旋翼模型"
-    echo "   make px4_sitl gazebo_plane              # 固定翼飞机"
-    echo "   make px4_sitl gazebo_vtol_standard      # 垂直起降飞机"
-    echo "   make px4_sitl gazebo_rover              # 地面车辆"
+    echo "   make px4_sitl gazebo                    # default iris quadrotor"
+    echo "   make px4_sitl gazebo_iris               # iris quadrotor model"
+    echo "   make px4_sitl gazebo_plane              # fixed-wing plane"
+    echo "   make px4_sitl gazebo_vtol_standard      # vertical takeoff and landing plane"
+    echo "   make px4_sitl gazebo_rover              # ground vehicle"
     echo ""
-    echo "🌍 使用不同世界环境："
-    echo "   make px4_sitl gazebo_iris__empty        # 空白世界"
-    echo "   make px4_sitl gazebo_iris__warehouse     # 仓库世界"
-    echo "   make px4_sitl gazebo_iris__windy        # 有风环境"
+    echo "🌍 use different world environments:"
+    echo "   make px4_sitl gazebo_iris__empty        # empty world"
+    echo "   make px4_sitl gazebo_iris__warehouse     # warehouse world"
+    echo "   make px4_sitl gazebo_iris__windy        # windy world"
     echo ""
-    echo "🎮 启动QGroundControl兼容模式："
+    echo "🎮 start QGroundControl compatible mode:"
     echo "   cd /workspace && ./scripts/simulation/start_px4_sim.sh --gui"
     echo ""
-    echo "🔧 编译项目（包含完整Gazebo环境配置）："
-    echo "   ./scripts/build/build_px4.sh           # 构建PX4和Gazebo环境"
-    echo "   ./scripts/build/build_livo.sh          # 构建LIVO系统"
+    echo "🔧 compile project (include full Gazebo environment configuration):"
+    echo "   ./scripts/build/build_px4.sh           # build PX4 and Gazebo environment"
+    echo "   ./scripts/build/build_livo.sh          # build LIVO system"
     echo ""
-    echo "📋 查看所有可用目标："
-    echo "   make list_config_targets                # 查看所有配置目标"
-    echo "   make px4_sitl list_vmd_make_targets     # 查看Gazebo模型"
+    echo "📋 check all available targets:"
+    echo "   make list_config_targets                # check all configuration targets"
+    echo "   make px4_sitl list_vmd_make_targets     # check Gazebo model"
     echo ""
-    echo "⚙️ 环境变量已设置："
+    echo "⚙️ environment variables set:"
     echo "   - DISPLAY=$DISPLAY"
-    echo "   - 支持OpenGL硬件加速"
-    echo "   - 支持音频输出"
+    echo "   - support OpenGL hardware acceleration"
+    echo "   - support audio output"
     echo "   - MAVLink端口: UDP 14540, TCP 4560"
     echo ""
 }
 
-# 检查参数
+# check parameters
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     show_usage
     exit 0
 fi
 
-# 执行主函数
+# execute main function
 main
 
 echo ""
-echo "🎉 GUI容器已退出"
-echo "💡 重新启动: $0" 
+echo "🎉 GUI container exited"
+echo "💡 restart: $0" 

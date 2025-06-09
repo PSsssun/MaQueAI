@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 获取脚本所在目录，并计算项目根目录
+# calculate project root directory (MaQueAI/)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 

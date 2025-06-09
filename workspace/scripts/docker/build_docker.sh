@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# 计算项目根目录 (MaQueAI/)
+# calculate project root directory (MaQueAI/)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
-# 切换到项目根目录进行构建
+# switch to project root directory for build
 cd "$PROJECT_ROOT"
 
 echo "🏗️  === MaQueAI Docker image build ==="
@@ -15,23 +15,23 @@ echo "📄  dockerfile: $(ls -la docker_config/Dockerfile-MaQueAI 2>/dev/null &&
 echo "⏰  start time: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
-# 验证必要文件是否存在
+# validate necessary files exist
 if [ ! -f "docker_config/Dockerfile-MaQueAI" ]; then
-    echo "❌ 错误: 未找到 Dockerfile"
-    echo "📂 当前目录: $(pwd)"
-    echo "📂 预期文件: docker_config/Dockerfile-MaQueAI"
-    echo "💡 请确保从项目根目录运行此脚本"
+    echo "❌ error: Dockerfile not found"
+    echo "📂 current directory: $(pwd)"
+    echo "📂 expected file: docker_config/Dockerfile-MaQueAI"
+    echo "💡 please ensure running this script from project root directory"
     exit 1
 fi
 
 if [ ! -d "workspace/scripts/build" ]; then
-    echo "❌ 错误: 未找到构建脚本目录"
-    echo "📂 当前目录: $(pwd)"  
-    echo "📂 预期目录: workspace/scripts/build"
+    echo "❌ error: build script directory not found"
+    echo "📂 current directory: $(pwd)"  
+    echo "📂 expected directory: workspace/scripts/build"
     exit 1
 fi
 
-echo "✅ 环境验证通过"
+echo "✅ environment validation passed"
 echo ""
 
 # record start time
