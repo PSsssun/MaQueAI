@@ -16,23 +16,23 @@ NC='\033[0m' # No Color
 
 # 验证函数
 check_exists() {
-    if [ -e "$1" ]; then
-        echo -e "${GREEN}✅ $1${NC}"
-        return 0
-    else
-        echo -e "${RED}❌ $1${NC}"
-        return 1
-    fi
+  if [ -e "$1" ]; then
+    echo -e "${GREEN}✅ $1${NC}"
+    return 0
+  else
+    echo -e "${RED}❌ $1${NC}"
+    return 1
+  fi
 }
 
 check_executable() {
-    if [ -x "$1" ]; then
-        echo -e "${GREEN}✅ $1 (可执行)${NC}"
-        return 0
-    else
-        echo -e "${YELLOW}⚠️  $1 (不可执行)${NC}"
-        return 1
-    fi
+  if [ -x "$1" ]; then
+    echo -e "${GREEN}✅ $1 (可执行)${NC}"
+    return 0
+  else
+    echo -e "${YELLOW}⚠️  $1 (不可执行)${NC}"
+    return 1
+  fi
 }
 
 echo "📁 === 验证目录结构 ==="
@@ -98,7 +98,7 @@ echo "更多文档请查看: docs/ 目录"
 
 echo ""
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}🎉 项目结构验证完成！${NC}"
+  echo -e "${GREEN}🎉 项目结构验证完成！${NC}"
 else
-    echo -e "${YELLOW}⚠️  项目结构验证完成，但发现一些问题，请检查上述输出${NC}"
-fi 
+  echo -e "${YELLOW}⚠️  项目结构验证完成，但发现一些问题，请检查上述输出${NC}"
+fi

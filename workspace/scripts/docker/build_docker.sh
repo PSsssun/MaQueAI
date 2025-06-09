@@ -17,18 +17,18 @@ echo ""
 
 # validate necessary files exist
 if [ ! -f "docker_config/Dockerfile-MaQueAI" ]; then
-    echo "❌ error: Dockerfile not found"
-    echo "📂 current directory: $(pwd)"
-    echo "📂 expected file: docker_config/Dockerfile-MaQueAI"
-    echo "💡 please ensure running this script from project root directory"
-    exit 1
+  echo "❌ error: Dockerfile not found"
+  echo "📂 current directory: $(pwd)"
+  echo "📂 expected file: docker_config/Dockerfile-MaQueAI"
+  echo "💡 please ensure running this script from project root directory"
+  exit 1
 fi
 
 if [ ! -d "workspace/scripts/build" ]; then
-    echo "❌ error: build script directory not found"
-    echo "📂 current directory: $(pwd)"  
-    echo "📂 expected directory: workspace/scripts/build"
-    exit 1
+  echo "❌ error: build script directory not found"
+  echo "📂 current directory: $(pwd)"
+  echo "📂 expected directory: workspace/scripts/build"
+  exit 1
 fi
 
 echo "✅ environment validation passed"
@@ -86,10 +86,10 @@ if [ $build_result -eq 0 ]; then
   docker images | grep maque-ai
   echo ""
   echo "💡  usage:"
-echo "   ./workspace/scripts/docker/run_docker_gui.sh    # start GUI container"
-echo "   ./workspace/scripts/build/build_all.sh          # compile all projects" 
-echo "   ./workspace/scripts/build/build_px4.sh          # compile PX4 only"
-echo "   ./workspace/scripts/build/build_livo.sh         # compile LIVO only"
+  echo "   ./workspace/scripts/docker/run_docker_gui.sh    # start GUI container"
+  echo "   ./workspace/scripts/build/build_all.sh          # compile all projects"
+  echo "   ./workspace/scripts/build/build_px4.sh          # compile PX4 only"
+  echo "   ./workspace/scripts/build/build_livo.sh         # compile LIVO only"
 else
   echo "❌  build failed!"
   echo "⏱️  build time: ${build_duration} seconds"
